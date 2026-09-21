@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
@@ -75,7 +77,28 @@
          VIEW: SETUP (Mode Selection)
          ============================================================ -->
     <div id="view-setup" class="view-section">
-      <section class="panel" style="max-width: 600px; margin: 40px auto;">
+      <!-- 3D Robot Model -->
+      <section class="panel" style="max-width: 900px; margin: 0 auto 20px auto;">
+        <div class="panel-header">
+          <span class="terminal-header">TERRA-BOT 3D MODEL</span>
+          <span class="terminal-text panel-tag">[PREVIEW]</span>
+        </div>
+        <div class="panel-body" style="padding: 0; overflow: hidden;">
+          <iframe
+            src="https://mycb3490.autodesk360.com/shares/public/SH90d2dQT28d5b602811952c6ef2c6923905?mode=embed"
+            width="100%"
+            height="450"
+            allowfullscreen="true"
+            webkitallowfullscreen="true"
+            mozallowfullscreen="true"
+            frameborder="0"
+            style="display: block; border: none;"
+          ></iframe>
+        </div>
+      </section>
+
+      <!-- Mode Selection -->
+      <section class="panel" style="max-width: 900px; margin: 0 auto;">
         <div class="panel-header">
           <span class="terminal-header">SYSTEM OPERATION MODE</span>
           <span class="terminal-text panel-tag">[SETUP]</span>
@@ -461,6 +484,57 @@
       </div>
     </div>
 
+    <!-- ============================================================
+         VIEW: MANUAL DRIVING (Three.js)
+         ============================================================ -->
+    <div id="view-manual" class="view-section" style="display: none; height: calc(100vh - 200px); position: relative;">
+      
+      <!-- 3D Canvas Container -->
+      <div id="manual-canvas-container" style="width: 100%; height: 100%; border: 2px solid var(--border); overflow: hidden;">
+        <!-- Three.js will inject canvas here -->
+      </div>
+
+      <!-- UI Overlay -->
+      <div class="manual-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+        
+        <!-- Top Stats (Telemetry) -->
+        <div style="display: flex; justify-content: space-between;">
+          <div class="terminal-text" style="background: rgba(18, 18, 18, 0.8); padding: 10px; border: 1px solid var(--border);">
+            SYS.TEL // <span style="color: var(--terminal-green);">ONLINE</span><br>
+            SPEED: <span id="manSpeed">0.0</span> m/s<br>
+            POS_X: <span id="manPosX">0.00</span><br>
+            POS_Z: <span id="manPosZ">0.00</span>
+          </div>
+          <div class="terminal-text" style="background: rgba(18, 18, 18, 0.8); padding: 10px; border: 1px solid var(--border); text-align: right;">
+            [MANUAL OVERRIDE]<br>
+            USE W/A/S/D TO DRIVE
+          </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          
+          <!-- Virtual D-Pad (Visual only for now, keyboard driven) -->
+          <div style="pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <button class="terminal-button" id="btnUp" onmousedown="setDrive('up', true)" onmouseup="setDrive('up', false)" onmouseleave="setDrive('up', false)" ontouchstart="setDrive('up', true)" ontouchend="setDrive('up', false)">W / ▲</button>
+            <div style="display: flex; gap: 4px;">
+              <button class="terminal-button" id="btnLeft" onmousedown="setDrive('left', true)" onmouseup="setDrive('left', false)" onmouseleave="setDrive('left', false)" ontouchstart="setDrive('left', true)" ontouchend="setDrive('left', false)">A / ◄</button>
+              <button class="terminal-button" id="btnDown" onmousedown="setDrive('down', true)" onmouseup="setDrive('down', false)" onmouseleave="setDrive('down', false)" ontouchstart="setDrive('down', true)" ontouchend="setDrive('down', false)">S / ▼</button>
+              <button class="terminal-button" id="btnRight" onmousedown="setDrive('right', true)" onmouseup="setDrive('right', false)" onmouseleave="setDrive('right', false)" ontouchstart="setDrive('right', true)" ontouchend="setDrive('right', false)">D / ►</button>
+            </div>
+          </div>
+
+          <!-- Dispense Controls -->
+          <div style="pointer-events: auto; display: flex; gap: 10px;">
+            <button class="terminal-button" id="btnDispense" style="padding: 20px; font-weight: bold; border-color: var(--terminal-yellow); color: var(--terminal-yellow);" onmousedown="setDispensing(true)" onmouseup="setDispensing(false)" onmouseleave="setDispensing(false)" ontouchstart="setDispensing(true)" ontouchend="setDispensing(false)">
+              [SPACE]<br>DISPENSE
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
   <!-- ============================================================
@@ -475,5 +549,6 @@
   </footer>
 
   <script src="./app.js"></script>
+  <script src="./manual.js"></script>
 </body>
 </html>

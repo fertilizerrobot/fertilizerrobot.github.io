@@ -249,6 +249,120 @@ function drawField() {
     ctx.textAlign = 'left';
     ctx.fillText(spacing + 'm', annotX + 14, (y1 + y2) / 2 + 4);
   }
+
+  // Store waypoints globally for animation
+  state.waypoints = waypoints;
+}
+
+// ============================================================
+// ANIMATED PATH TRACER — Glowing bot traces the serpentine path
+// ============================================================
+let animationId = null;
+let botProgress = 0;        // 0 to 1 across entire path
+const BOT_SPEED = 0.003;    // How fast the bot moves per frame
+let trailPoints = [];        // Trail behind the bot
+const MAX_TRAIL = 60;        // Trail length
+
+function startPathAnimation() {
+  if (animationId) cancelAnimationFrame(animationId);
+  botProgress = 0;
+  trailPoints = [];
+  animateBot();
+}
+
+function stopPathAnimation() {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+}
+
+function getBotPosition(progress) {
+  const wps = state.waypoints;
+  if (!wps || wps.length < 2) return null;
+
+  // Calculate total path length
+  let totalLen = 0;
+  const segLengths = [];
+  for (let i = 1; i < wps.length; i++) {
+    const dx = wps[i].x - wps[i - 1].x;
+    const dy = wps[i].y - wps[i - 1].y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    segLengths.push(len);
+    totalLen += len;
+  }
+
+  // Find position along path
+  let targetDist = progress * totalLen;
+  for (let i = 0; i < segLengths.length; i++) {
+    if (targetDist <= segLengths[i]) {
+      const t = targetDist / segLengths[i];
+      return {
+        x: wps[i].x + (wps[i + 1].x - wps[i].x) * t,
+        y: wps[i].y + (wps[i + 1].y - wps[i].y) * t
+      };
+    }
+    targetDist -= segLengths[i];
+  }
+  return wps[wps.length - 1];
+}
+
+function animateBot() {
+  if (!canvas || !ctx || !state.waypoints || state.waypoints.length < 2) return;
+
+  // Redraw static field
+  drawField();
+
+  const pos = getBotPosition(botProgress);
+  if (!pos) return;
+
+  // Add to trail
+  trailPoints.push({ x: pos.x, y: pos.y, alpha: 1.0 });
+  if (trailPoints.length > MAX_TRAIL) trailPoints.shift();
+
+  // Draw trail — fading cyan glow
+  for (let i = 0; i < trailPoints.length; i++) {
+    const tp = trailPoints[i];
+    const alpha = (i / trailPoints.length) * 0.6;
+    const radius = 2 + (i / trailPoints.length) * 2;
+
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(102, 178, 255, ${alpha})`;
+    ctx.fill();
+  }
+
+  // Draw bot — bright glowing dot with halo
+  // Outer glow
+  const glowGrad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 18);
+  glowGrad.addColorStop(0, 'rgba(102, 178, 255, 0.4)');
+  glowGrad.addColorStop(0.5, 'rgba(102, 178, 255, 0.1)');
+  glowGrad.addColorStop(1, 'rgba(102, 178, 255, 0)');
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2);
+  ctx.fillStyle = glowGrad;
+  ctx.fill();
+
+  // Core dot
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#66b2ff';
+  ctx.fill();
+
+  // Bright center
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  // Advance progress
+  botProgress += BOT_SPEED;
+  if (botProgress >= 1) {
+    botProgress = 0;
+    trailPoints = [];
+  }
+
+  animationId = requestAnimationFrame(animateBot);
 }
 
 // Apply config button
@@ -284,32 +398,37 @@ function selectMode(mode) {
     btnAuto.classList.add('btn-primary');
     btnManual.classList.remove('btn-primary');
     msgNotBuilt.style.display = 'none';
-    btnNext.style.opacity = '1';
-    btnNext.style.pointerEvents = 'auto';
   } else {
     btnManual.classList.add('btn-primary');
     btnAuto.classList.remove('btn-primary');
-    msgNotBuilt.style.display = 'block';
-    // Disable Next button if manual is selected since it's not built
-    btnNext.style.opacity = '0.5';
-    btnNext.style.pointerEvents = 'none';
+    msgNotBuilt.style.display = 'none'; // Manual is built now
   }
+  
+  btnNext.style.opacity = '1';
+  btnNext.style.pointerEvents = 'auto';
 }
 
 function goToStep(step) {
   currentStep = step;
+  
+  // Stop animation when leaving any view
+  stopPathAnimation();
   
   // Hide all views
   const setupView = document.getElementById('view-setup');
   const pathView = document.getElementById('view-path');
   const fertView = document.getElementById('view-fert');
   const revView = document.getElementById('view-rev');
+  const manView = document.getElementById('view-manual');
   
   if (setupView) setupView.style.display = 'none';
   if (pathView) pathView.style.display = 'none';
   if (fertView) fertView.style.display = 'none';
   if (revView) revView.style.display = 'none';
+  if (manView) manView.style.display = 'none';
   
+  window.isManualModeActive = false; // Turn off ThreeJS rendering
+
   // Reset all tabs
   document.querySelectorAll('.nof1-tab').forEach(t => t.classList.remove('active-tab'));
   
@@ -332,10 +451,11 @@ function goToStep(step) {
       btnNext.style.opacity = '1';
       btnNext.style.pointerEvents = 'auto';
     }
-    // Re-draw canvas now that its container is visible and has width
+    // Re-draw canvas and start path animation
     setTimeout(() => {
       resizeCanvas();
       drawField();
+      startPathAnimation();
     }, 0);
   } else if (step === 'fert') {
     if (fertView) fertView.style.display = 'block';
@@ -363,18 +483,38 @@ function goToStep(step) {
     document.getElementById('revRows').textContent = state.rowCount;
     document.getElementById('revTrajectory').textContent = document.getElementById('trajectoryDisplay').textContent;
     document.getElementById('revTime').textContent = document.getElementById('timeDisplay').textContent;
+  } else if (step === 'manual') {
+    if (manView) manView.style.display = 'block';
+    // Highlight Setup tab as it's technically still the setup flow
+    document.querySelector('.tab-setup').classList.add('active-tab');
+    if (btnPrev) btnPrev.style.display = 'block';
+    if (btnNext) {
+      btnNext.textContent = 'FINISH DRIVING';
+      btnNext.style.opacity = '1';
+      btnNext.style.pointerEvents = 'auto';
+    }
+    window.isManualModeActive = true; // Turn on ThreeJS rendering
+    
+    // Force Three.js to recalculate canvas size now that it's visible
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 0);
   }
 }
 
 function nextStep() {
-  if (currentStep === 'setup' && selectedMode === 'auto') {
-    goToStep('path');
+  if (currentStep === 'setup') {
+    if (selectedMode === 'auto') goToStep('path');
+    else goToStep('manual');
   } else if (currentStep === 'path') {
     goToStep('fert');
   } else if (currentStep === 'fert') {
     goToStep('rev');
   } else if (currentStep === 'rev') {
     alert('Deploying configuration to robot...');
+  } else if (currentStep === 'manual') {
+    alert('Manual driving session complete!');
+    goToStep('setup');
   }
 }
 
@@ -384,6 +524,8 @@ function prevStep() {
   } else if (currentStep === 'fert') {
     goToStep('path');
   } else if (currentStep === 'path') {
+    goToStep('setup');
+  } else if (currentStep === 'manual') {
     goToStep('setup');
   }
 }
