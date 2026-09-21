@@ -1,0 +1,758 @@
+:root {
+  --background: #121212;
+  --surface: #1e1e1e;
+  --surface-elevated: #2a2a2a;
+  --surface-hover: #333333;
+  --foreground: #ffffff;
+  --foreground-muted: #cccccc;
+  --foreground-subtle: #999999;
+  --accent-primary: #3366ff;
+  --accent-success: #00cc00;
+  --accent-warning: #ffcc00;
+  --accent-error: #ff3333;
+  --border: #575757;
+  --border-subtle: #444444;
+  --terminal-green: #00cc00;
+  --terminal-red: #ff3333;
+  --terminal-yellow: #ffd700;
+  --terminal-blue: #66b2ff;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Terminal Typography — identical to nof1.ai */
+.terminal-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.terminal-header {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+}
+
+.terminal-data {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-weight: 500;
+}
+
+.terminal-positive {
+  color: var(--terminal-green);
+  font-weight: 600;
+}
+
+.terminal-negative {
+  color: var(--terminal-red);
+  font-weight: 600;
+}
+
+.terminal-border {
+  border: 2px solid var(--border);
+  border-collapse: collapse;
+}
+
+.terminal-button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  transition: none;
+  font-size: 0.75rem;
+}
+
+.terminal-button:hover {
+  background: var(--surface-hover);
+}
+
+.terminal-button.active,
+.terminal-button:active {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* ==========================================================================
+   Nof1 Style Header & Tabs
+   ========================================================================== */
+.nof1-header {
+  background-color: var(--surface);
+  color: var(--foreground);
+  border-bottom: 2px solid var(--border);
+  padding: 12px 24px;
+}
+
+.nof1-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nof1-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.nof1-status {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.nof1-status .status-label {
+  color: var(--foreground-subtle);
+  margin-right: 8px;
+  font-size: 0.75rem;
+}
+
+.nof1-status .status-value {
+  font-size: 0.85rem;
+}
+
+.nof1-tabs-wrapper {
+  background: var(--background);
+  /* Removed margin-bottom to reduce gap */
+}
+
+.nof1-tabs {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  border-left: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.nof1-tab {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  padding: 14px 24px;
+  border-right: 2px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+/* Inactive Tab Styles */
+.tab-setup {
+  color: var(--foreground-muted);
+}
+.tab-path {
+  background-color: rgba(74, 222, 128, 0.08);
+  color: #4ade80; /* Light green */
+}
+.tab-fert {
+  background-color: rgba(251, 191, 36, 0.08);
+  color: #fbbf24; /* Light orange/yellow */
+}
+.tab-rev {
+  background-color: rgba(244, 114, 182, 0.08);
+  color: #f472b6; /* Light pink */
+}
+
+/* Active Tab Styles — Solid High Contrast */
+.nof1-tab.active-tab {
+  font-weight: 700;
+}
+.tab-setup.active-tab {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+.tab-path.active-tab {
+  background-color: #4ade80;
+  color: #000000;
+}
+.tab-fert.active-tab {
+  background-color: #fbbf24;
+  color: #000000;
+}
+.tab-rev.active-tab {
+  background-color: #f472b6;
+  color: #000000;
+}
+
+.nof1-tab-filler {
+  flex: 1;
+  background-color: var(--background);
+}
+
+
+
+/* ==========================================================================
+   Main Content
+   ========================================================================== */
+.main-content {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 24px 24px; /* Set top padding to 20px to match the gap below status bar */
+  width: 100%;
+}
+
+/* Page Title */
+.page-title-section {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-bottom: 6px;
+}
+
+.page-subtitle {
+  font-size: 0.75rem;
+  color: var(--foreground-subtle);
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+/* ==========================================================================
+   Status Summary Bar
+   ========================================================================== */
+.status-bar {
+  display: flex;
+  border: 2px solid var(--border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.status-cell {
+  flex: 1;
+  padding: 8px 12px;
+  border-right: 2px solid var(--border);
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-cell:last-child {
+  border-right: none;
+}
+
+.status-label {
+  font-size: 0.6rem;
+  color: var(--foreground-subtle);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-cell .terminal-data {
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* ==========================================================================
+   Config Grid: Two Column Layout
+   ========================================================================== */
+.config-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 0;
+}
+
+@media (max-width: 900px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Panel
+   ========================================================================== */
+.panel {
+  border: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Remove double borders when panels are side by side */
+.config-grid .panel + .panel {
+  border-left: none;
+}
+
+@media (max-width: 900px) {
+  .config-grid .panel + .panel {
+    border-left: 2px solid var(--border);
+    border-top: none;
+  }
+}
+
+.panel-header {
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-elevated);
+}
+
+.panel-header .terminal-header {
+  font-size: 0.8rem;
+}
+
+.panel-tag {
+  font-size: 0.65rem;
+  color: var(--foreground-subtle);
+}
+
+.panel-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   Input Groups — Field Length, Width, Rows
+   ========================================================================== */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+}
+
+.input-group:hover,
+.input-group:focus-within {
+  border-color: var(--foreground);
+  box-shadow: 2px 2px 0px var(--foreground);
+}
+
+.input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+}
+
+.input-readout {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.input-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terminal-input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  outline: none;
+  width: 100%;
+  max-width: 140px;
+}
+
+.terminal-input:focus {
+  border-color: var(--foreground);
+  box-shadow: 2px 2px 0px var(--foreground);
+}
+
+.input-unit {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--foreground-subtle);
+}
+
+/* Slider — flat, brutalist style */
+.terminal-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+.terminal-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--foreground);
+  border: 2px solid var(--foreground);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.terminal-slider::-webkit-slider-thumb:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.terminal-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--foreground);
+  border: 2px solid var(--foreground);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-ticks .terminal-text {
+  font-size: 0.55rem;
+  color: var(--foreground-subtle);
+}
+
+/* Row stepper */
+.row-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.stepper-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.row-input {
+  width: 60px;
+  max-width: 60px;
+  height: 36px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  border-left: none;
+  border-right: none;
+}
+
+.input-hint {
+  font-size: 0.6rem;
+  color: var(--foreground-subtle);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Summary Table
+   ========================================================================== */
+.summary-table-wrap {
+  margin-top: 4px;
+}
+
+.summary-table {
+  width: 100%;
+}
+
+.summary-table th {
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+  background: var(--surface-elevated);
+}
+
+.summary-table th:last-child {
+  border-right: none;
+  text-align: right;
+}
+
+.summary-table td {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 2px solid var(--border);
+}
+
+.summary-table td:last-child {
+  border-right: none;
+  text-align: right;
+  font-weight: 600;
+}
+
+.summary-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+.action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-primary {
+  background: var(--foreground);
+  color: var(--background);
+  border: 2px solid var(--foreground);
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--background);
+}
+
+.action-row .terminal-button:not(.btn-primary) {
+  padding: 8px 16px;
+  border-width: 2px;
+}
+
+/* ==========================================================================
+   Canvas / Field Path Preview
+   ========================================================================== */
+.canvas-body {
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#fieldCanvas {
+  width: 100%;
+  flex: 1;
+  min-height: 400px;
+  display: block;
+  background: var(--surface);
+}
+
+.canvas-legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-item .terminal-text {
+  font-size: 0.65rem;
+  color: var(--foreground-subtle);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+
+.swatch-boundary {
+  border: 2px solid #000000;
+  background: transparent;
+}
+
+.swatch-path {
+  background: transparent;
+  border: 1px dashed #0000aa;
+  height: 2px;
+  width: 12px;
+  margin-top: 5px;
+}
+
+.swatch-row {
+  background: transparent;
+  border-bottom: 1px solid #cccccc;
+  height: 2px;
+  width: 12px;
+  margin-top: 5px;
+}
+
+.swatch-robot {
+  width: 10px;
+  height: 10px;
+  background: #000000;
+  border-radius: 50%;
+}
+
+.canvas-readout {
+  padding: 6px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+}
+
+.canvas-readout .terminal-text {
+  font-size: 0.65rem;
+  color: var(--foreground-muted);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.footer-bar {
+  border-top: 2px solid var(--border);
+  background: var(--surface);
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-bar .terminal-text {
+  font-size: 0.6rem;
+  color: var(--foreground-subtle);
+}
+
+@media (max-width: 768px) {
+  .footer-inner {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   Fertilizer Config View
+   ========================================================================== */
+.view-section {
+  width: 100%;
+}
+
+.fert-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .fert-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fert-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.container-header {
+  padding: 10px 16px;
+  background: var(--surface-elevated);
+  border-bottom: 2px solid var(--border);
+  text-align: center;
+}
+
+.container-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Review View
+   ========================================================================== */
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Scrollbar
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

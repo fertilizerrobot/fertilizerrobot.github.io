@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Smart Fertilizer Application & Monitoring System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Smart Fertilizer Application & Monitoring System - Field Configuration & Robot Control Interface">
+  <link rel="icon" type="image/png" href="/logos/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       ============================================================ -->
+  <header class="nof1-header">
+    <div class="nof1-header-inner">
+      <h1 class="nof1-title">Smart Fertilizer Application & Monitoring System</h1>
+      <div class="nof1-status">
+        <span class="status-label">BOT STATUS:</span>
+        <span class="status-value terminal-positive" id="headerRobotStatus">IDLE — READY</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       NOF1 TABS
+       ============================================================ -->
+  <div class="nof1-tabs-wrapper">
+    <div class="nof1-tabs">
+      <div class="nof1-tab tab-setup active-tab" onclick="goToStep('setup')">Setup</div>
+      <div class="nof1-tab tab-path" onclick="goToStep('path')">1: Path Config</div>
+      <div class="nof1-tab tab-fert" onclick="goToStep('fert')">2: Fertilizer Config</div>
+      <div class="nof1-tab tab-rev" onclick="goToStep('rev')">3: Review</div>
+      <div class="nof1-tab-filler"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="main-content">
+
+    <!-- Status Summary Bar -->
+    <div class="status-bar">
+      <div class="status-cell">
+        <span class="terminal-text status-label">MODE</span>
+        <span class="terminal-data" id="currentMode">AUTOMATIC</span>
+      </div>
+      <div class="status-cell">
+        <span class="terminal-text status-label">ROW LENGTH</span>
+        <span class="terminal-data" id="rowLengthDisplay">50 m</span>
+      </div>
+      <div class="status-cell">
+        <span class="terminal-text status-label">ROW SPACING</span>
+        <span class="terminal-data" id="rowSpacingDisplay">7 m</span>
+      </div>
+      <div class="status-cell">
+        <span class="terminal-text status-label">ROW COUNT</span>
+        <span class="terminal-data" id="rowCountDisplay">3</span>
+      </div>
+      <div class="status-cell">
+        <span class="terminal-text status-label">EST. TRAJECTORY</span>
+        <span class="terminal-data" id="trajectoryDisplay">150.00 m</span>
+      </div>
+      <div class="status-cell">
+        <span class="terminal-text status-label">EST. TIME</span>
+        <span class="terminal-data" id="timeDisplay">5 min 0 sec</span>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         VIEW: SETUP (Mode Selection)
+         ============================================================ -->
+    <div id="view-setup" class="view-section">
+      <section class="panel" style="max-width: 600px; margin: 40px auto;">
+        <div class="panel-header">
+          <span class="terminal-header">SYSTEM OPERATION MODE</span>
+          <span class="terminal-text panel-tag">[SETUP]</span>
+        </div>
+        <div class="panel-body" style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="input-group">
+            <label class="terminal-text input-label">SELECT MODE</label>
+            <div style="display: flex; gap: 16px; margin-top: 8px;">
+              <button id="btnModeAuto" class="terminal-button btn-primary" style="flex: 1; padding: 20px; font-size: 1rem;" onclick="selectMode('auto')">
+                AUTOMATIC<br><span style="font-size: 0.7rem; font-weight: 400;">Predefined Path</span>
+              </button>
+              <button id="btnModeManual" class="terminal-button" style="flex: 1; padding: 20px; font-size: 1rem;" onclick="selectMode('manual')">
+                MANUAL<br><span style="font-size: 0.7rem; font-weight: 400;">Direct control</span>
+              </button>
+            </div>
+          </div>
+          
+          <div id="manualNotBuilt" class="terminal-text" style="display: none; padding: 16px; border: 1px dashed #ff5252; text-align: center; color: #ff5252;">
+            > ERROR: MANUAL MODE INTERFACE NOT BUILT YET <
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================
+         VIEW: PATH CONFIGURATION
+         ============================================================ -->
+    <div id="view-path" class="view-section" style="display: none;">
+      <!-- Config + Preview Grid -->
+      <div class="config-grid">
+
+        <!-- LEFT: Field Configuration Panel -->
+        <section class="panel">
+          <div class="panel-header">
+            <span class="terminal-header">FIELD CONFIGURATION</span>
+            <span class="terminal-text panel-tag">[INPUT]</span>
+          </div>
+
+          <div class="panel-body">
+
+            <!-- Row Length -->
+            <div class="input-group">
+              <div class="input-label-row">
+                <label class="terminal-text input-label" for="fieldLength">ROW LENGTH (m)</label>
+                <span class="terminal-data input-readout" id="lengthReadout">50</span>
+              </div>
+              <div class="input-control">
+                <input
+                  type="number"
+                  id="fieldLength"
+                  class="terminal-input"
+                  value="50"
+                  min="5"
+                  max="500"
+                  step="1"
+                  oninput="updateField()"
+                >
+                <span class="input-unit">meters</span>
+              </div>
+              <input
+                type="range"
+                id="fieldLengthSlider"
+                class="terminal-slider"
+                value="50"
+                min="5"
+                max="500"
+                step="1"
+                oninput="syncSlider('fieldLength', 'fieldLengthSlider')"
+              >
+              <div class="slider-ticks">
+                <span class="terminal-text">5</span>
+                <span class="terminal-text">125</span>
+                <span class="terminal-text">250</span>
+                <span class="terminal-text">375</span>
+                <span class="terminal-text">500</span>
+              </div>
+            </div>
+
+            <!-- Row Width -->
+            <div class="input-group">
+              <div class="input-label-row">
+                <label class="terminal-text input-label" for="fieldWidth">ROW WIDTH (m)</label>
+                <span class="terminal-data input-readout" id="widthReadout">7</span>
+              </div>
+              <div class="input-control">
+                <input
+                  type="number"
+                  id="fieldWidth"
+                  class="terminal-input"
+                  value="7"
+                  min="0.5"
+                  max="20"
+                  step="0.1"
+                  oninput="updateField()"
+                >
+                <span class="input-unit">meters</span>
+              </div>
+              <input
+                type="range"
+                id="fieldWidthSlider"
+                class="terminal-slider"
+                value="7"
+                min="0.5"
+                max="20"
+                step="0.1"
+                oninput="syncSlider('fieldWidth', 'fieldWidthSlider')"
+              >
+              <div class="slider-ticks">
+                <span class="terminal-text">0.5</span>
+                <span class="terminal-text">5</span>
+                <span class="terminal-text">10</span>
+                <span class="terminal-text">15</span>
+                <span class="terminal-text">20</span>
+              </div>
+            </div>
+
+            <!-- Number of Rows -->
+            <div class="input-group">
+              <div class="input-label-row">
+                <label class="terminal-text input-label" for="rowCount">APPLICATION ROWS</label>
+                <span class="terminal-data input-readout" id="rowReadout">3</span>
+              </div>
+              <div class="row-stepper">
+                <button class="terminal-button stepper-btn" onclick="changeRows(-1)">−</button>
+                <input
+                  type="number"
+                  id="rowCount"
+                  class="terminal-input row-input"
+                  value="3"
+                  min="1"
+                  max="20"
+                  step="1"
+                  onchange="updateField()"
+                >
+                <button class="terminal-button stepper-btn" onclick="changeRows(1)">+</button>
+              </div>
+              <span class="terminal-text input-hint">Default: 3 rows (per project specification)</span>
+            </div>
+
+            <!-- Computed Summary Table -->
+            <div class="summary-table-wrap">
+              <table class="summary-table terminal-border">
+                <thead>
+                  <tr>
+                    <th class="terminal-text">PARAMETER</th>
+                    <th class="terminal-text">VALUE</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                  <tr>
+                    <td class="terminal-text">Row Count</td>
+                    <td class="terminal-data" id="summaryRows">3</td>
+                  </tr>
+                  <tr>
+                    <td class="terminal-text">Row Spacing</td>
+                    <td class="terminal-data" id="summarySpacing">7.00 m</td>
+                  </tr>
+                  <tr>
+                    <td class="terminal-text">Total Trajectory</td>
+                    <td class="terminal-data" id="summaryTrajectory">150.00 m</td>
+                  </tr>
+                  <tr>
+                    <td class="terminal-text">Est. Time (@ 0.5 m/s)</td>
+                    <td class="terminal-data" id="summaryTime">5 min 0 sec</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-row">
+              <button class="terminal-button btn-primary" onclick="applyConfig()">
+                APPLY CONFIGURATION
+              </button>
+              <button class="terminal-button" onclick="resetConfig()">
+                RESET TO DEFAULT
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- RIGHT: Field Path Preview -->
+        <section class="panel">
+          <div class="panel-header">
+            <span class="terminal-header">FIELD PATH PREVIEW</span>
+            <span class="terminal-text panel-tag">[VISUAL]</span>
+          </div>
+          <div class="panel-body canvas-body">
+            <canvas id="fieldCanvas"></canvas>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         VIEW: FERTILIZER CONFIGURATION
+         ============================================================ -->
+    <div id="view-fert" class="view-section" style="display: none;">
+      <section class="panel">
+        <div class="panel-header">
+          <span class="terminal-header">FERTILIZER DISPENSING CONFIGURATION</span>
+          <span class="terminal-text panel-tag">[CONTAINERS]</span>
+        </div>
+        <div class="panel-body">
+          <div class="fert-grid">
+            
+            <!-- Container 1 -->
+            <div class="fert-container terminal-border">
+              <div class="container-header terminal-header">CONTAINER 01</div>
+              <div class="container-body">
+                <div class="input-group">
+                  <label class="terminal-text input-label">FERTILIZER TYPE</label>
+                  <select class="terminal-input" style="max-width: 100%;">
+                    <option>NPK 15-15-15</option>
+                    <option>Urea (46-0-0)</option>
+                    <option>DAP (18-46-0)</option>
+                    <option>Custom Blend</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">INITIAL QTY (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="100" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">REQ. TO DISPENSE (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="50" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">TARGET RATE (KG/ROW)</label>
+                    <span class="terminal-data input-readout" style="color: var(--accent-primary);">16.6</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Container 2 -->
+            <div class="fert-container terminal-border">
+              <div class="container-header terminal-header">CONTAINER 02</div>
+              <div class="container-body">
+                <div class="input-group">
+                  <label class="terminal-text input-label">FERTILIZER TYPE</label>
+                  <select class="terminal-input" style="max-width: 100%;">
+                    <option>Urea (46-0-0)</option>
+                    <option>NPK 15-15-15</option>
+                    <option>DAP (18-46-0)</option>
+                    <option>Custom Blend</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">INITIAL QTY (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="50" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">REQ. TO DISPENSE (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="25" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">TARGET RATE (KG/ROW)</label>
+                    <span class="terminal-data input-readout" style="color: var(--accent-primary);">8.3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Container 3 -->
+            <div class="fert-container terminal-border">
+              <div class="container-header terminal-header">CONTAINER 03</div>
+              <div class="container-body">
+                <div class="input-group">
+                  <label class="terminal-text input-label">FERTILIZER TYPE</label>
+                  <select class="terminal-input" style="max-width: 100%;">
+                    <option>DAP (18-46-0)</option>
+                    <option>NPK 15-15-15</option>
+                    <option>Urea (46-0-0)</option>
+                    <option>Custom Blend</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">INITIAL QTY (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="25" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">REQ. TO DISPENSE (KG)</label>
+                  </div>
+                  <input type="number" class="terminal-input" value="15" style="max-width: 100%;">
+                </div>
+                <div class="input-group">
+                  <div class="input-label-row">
+                    <label class="terminal-text input-label">TARGET RATE (KG/ROW)</label>
+                    <span class="terminal-data input-readout" style="color: var(--accent-primary);">5.0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================
+         VIEW: REVIEW
+         ============================================================ -->
+    <div id="view-rev" class="view-section" style="display: none;">
+      <div class="review-grid">
+        
+        <!-- Final Field Summary -->
+        <section class="panel">
+          <div class="panel-header">
+            <span class="terminal-header">FINAL FIELD CONFIGURATION</span>
+            <span class="terminal-text panel-tag">[SUMMARY]</span>
+          </div>
+          <div class="panel-body">
+            <table class="summary-table terminal-border" style="width: 100%;">
+              <tbody>
+                <tr><td class="terminal-text">Mode</td><td class="terminal-data" id="revMode">AUTOMATIC</td></tr>
+                <tr><td class="terminal-text">Row Length</td><td class="terminal-data" id="revLength">50 m</td></tr>
+                <tr><td class="terminal-text">Row Spacing</td><td class="terminal-data" id="revSpacing">7 m</td></tr>
+                <tr><td class="terminal-text">Total Rows</td><td class="terminal-data" id="revRows">3</td></tr>
+                <tr><td class="terminal-text">Total Trajectory</td><td class="terminal-data" id="revTrajectory">150.00 m</td></tr>
+                <tr><td class="terminal-text">Estimated Time</td><td class="terminal-data" id="revTime">5 min 0 sec</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Final Fertilizer Summary -->
+        <section class="panel">
+          <div class="panel-header">
+            <span class="terminal-header">FERTILIZER CONFIGURATION</span>
+            <span class="terminal-text panel-tag">[SUMMARY]</span>
+          </div>
+          <div class="panel-body">
+            <table class="summary-table terminal-border" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th class="terminal-text">CONT.</th>
+                  <th class="terminal-text">TYPE</th>
+                  <th class="terminal-text">TARGET QTY</th>
+                  <th class="terminal-text">RATE/ROW</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="terminal-text">01</td>
+                  <td class="terminal-data">NPK 15-15-15</td>
+                  <td class="terminal-data">50 KG</td>
+                  <td class="terminal-data">16.6 KG</td>
+                </tr>
+                <tr>
+                  <td class="terminal-text">02</td>
+                  <td class="terminal-data">Urea (46-0-0)</td>
+                  <td class="terminal-data">25 KG</td>
+                  <td class="terminal-data">8.3 KG</td>
+                </tr>
+                <tr>
+                  <td class="terminal-text">03</td>
+                  <td class="terminal-data">DAP (18-46-0)</td>
+                  <td class="terminal-data">15 KG</td>
+                  <td class="terminal-data">5.0 KG</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       BOTTOM NAV / FOOTER
+       ============================================================ -->
+  <footer class="footer-bar">
+    <div class="footer-inner" style="display: flex; justify-content: space-between;">
+      <button id="btnPrev" class="terminal-button" style="display: none;" onclick="prevStep()">⟵ PREVIOUS</button>
+      <div style="flex: 1;"></div>
+      <button id="btnNext" class="terminal-button btn-primary" onclick="nextStep()">NEXT ➔</button>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
