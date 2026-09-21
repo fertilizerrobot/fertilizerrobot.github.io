@@ -525,9 +525,15 @@
           </div>
 
           <!-- Dispense Controls -->
-          <div style="pointer-events: auto; display: flex; gap: 10px;">
-            <button class="terminal-button" id="btnDispense" style="padding: 20px; font-weight: bold; border-color: var(--terminal-yellow); color: var(--terminal-yellow);" onmousedown="setDispensing(true)" onmouseup="setDispensing(false)" onmouseleave="setDispensing(false)" ontouchstart="setDispensing(true)" ontouchend="setDispensing(false)">
-              [SPACE]<br>DISPENSE
+          <div style="pointer-events: auto; display: flex; gap: 8px;">
+            <button class="terminal-button" id="btnDisp1" style="padding: 12px 16px; font-weight: bold; border-color: #ff5555; color: #ff5555;" onmousedown="setDispensing(1, true)" onmouseup="setDispensing(1, false)" onmouseleave="setDispensing(1, false)" ontouchstart="setDispensing(1, true)" ontouchend="setDispensing(1, false)">
+              [1]<br>FERT A
+            </button>
+            <button class="terminal-button" id="btnDisp2" style="padding: 12px 16px; font-weight: bold; border-color: #55ff55; color: #55ff55;" onmousedown="setDispensing(2, true)" onmouseup="setDispensing(2, false)" onmouseleave="setDispensing(2, false)" ontouchstart="setDispensing(2, true)" ontouchend="setDispensing(2, false)">
+              [2]<br>FERT B
+            </button>
+            <button class="terminal-button" id="btnDisp3" style="padding: 12px 16px; font-weight: bold; border-color: #5555ff; color: #5555ff;" onmousedown="setDispensing(3, true)" onmouseup="setDispensing(3, false)" onmouseleave="setDispensing(3, false)" ontouchstart="setDispensing(3, true)" ontouchend="setDispensing(3, false)">
+              [3]<br>FERT C
             </button>
           </div>
         </div>
